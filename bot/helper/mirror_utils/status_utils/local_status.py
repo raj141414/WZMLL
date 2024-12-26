@@ -40,5 +40,5 @@ class LocalStatus:
         self.__listener.suproc = 'cancelled'
         await self.__listener.onUploadError('Local upload stopped by user!')
 
-  def eng(self):
+    def eng(self):
         return EngineStatus().STATUS_LOCAL
