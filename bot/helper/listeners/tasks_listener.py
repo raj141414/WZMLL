@@ -108,45 +108,39 @@ class MirrorLeechListener:
         self.upload_details['mode'] = mode
         
     def __parseSource(self):
-    if self.source_url == self.message.link:
-        file = self.message.reply_to_message
-        if file:
-            self.source_url = file.link
-        if file is not None and file.media is not None:
-            mtype = file.media.value
-            media = getattr(file, mtype)
-            self.source_msg = f'┎ <b>Name:</b> <i>{media.file_name if hasattr(media, "file_name") else f"{mtype}_{media.file_unique_id}"}</i>\n┠ <b>Type:</b> {media.mime_type if hasattr(media, "mime_type") else "image/jpeg" if mtype == "photo" else "text/plain"}\n┠ <b>Size:</b> {get_readable_file_size(media.file_size)}\n┠ <b>Created Date:</b> {media.date}\n┖ <b>Media Type:</b> {mtype.capitalize()}'
-        else:
-            # Instead of "No reply found", return the filename or media ID
-            if self.message.reply_to_message and self.message.reply_to_message.text:
-                self.source_msg = f"<code>{self.message.reply_to_message.text}</code>"
+        if self.source_url == self.message.link:
+            file = self.message.reply_to_message
+            if file:
+                self.source_url = file.link
+            if file is not None and file.media is not None:
+                mtype = file.media.value
+                media = getattr(file, mtype)
+                self.source_msg = f'┎ <b>Name:</b> <i>{media.file_name if hasattr(media, "file_name") else f"{mtype}_{media.file_unique_id}"}</i>\n┠ <b>Type:</b> {media.mime_type if hasattr(media, "mime_type") else "image/jpeg" if mtype == "photo" else "text/plain"}\n┠ <b>Size:</b> {get_readable_file_size(media.file_size)}\n┠ <b>Created Date:</b> {media.date}\n┖ <b>Media Type:</b> {mtype.capitalize()}'
             else:
-                # Extract the filename from the media, or use a fallback like the file ID
                 filename = "Unknown File"
                 if self.message.reply_to_message and self.message.reply_to_message.media:
                     mtype = self.message.reply_to_message.media.value
                     media = getattr(self.message.reply_to_message, mtype)
                     filename = media.file_name if hasattr(media, "file_name") else f"{mtype}_{media.file_unique_id}"
                 self.source_msg = f"<code>{filename}</code>"
-    elif self.source_url.startswith('https://t.me/share/url?url='):
-        msg = self.source_url.replace('https://t.me/share/url?url=', '')
-        if msg.startswith('magnet'):
-            mag = unquote(msg).split('&')
-            tracCount, name, amper = 0, '', False
-            for check in mag:
-                if check.startswith('tr='):
-                    tracCount += 1
-                elif check.startswith('magnet:?xt=urn:btih:'):
-                    hashh = check.replace('magnet:?xt=urn:btih:', '')
-                else:
-                    name += ('&' if amper else '') + check.replace('dn=', '').replace('+', ' ')
-                    amper = True
-            self.source_msg = f"┎ <b>Name:</b> <i>{name}</i>\n┠ <b>Magnet Hash:</b> <code>{hashh}</code>\n┠ <b>Total Trackers:</b> {tracCount} \n┖ <b>Share:</b> <a href='https://t.me/share/url?url={quote(msg)}'>Share To Telegram</a>"
+        elif self.source_url.startswith('https://t.me/share/url?url='):
+            msg = self.source_url.replace('https://t.me/share/url?url=', '')
+            if msg.startswith('magnet'):
+                mag = unquote(msg).split('&')
+                tracCount, name, amper = 0, '', False
+                for check in mag:
+                    if check.startswith('tr='):
+                        tracCount += 1
+                    elif check.startswith('magnet:?xt=urn:btih:'):
+                        hashh = check.replace('magnet:?xt=urn:btih:', '')
+                    else:
+                        name += ('&' if amper else '') + check.replace('dn=', '').replace('+', ' ')
+                        amper = True
+                self.source_msg = f"┎ <b>Name:</b> <i>{name}</i>\n┠ <b>Magnet Hash:</b> <code>{hashh}</code>\n┠ <b>Total Trackers:</b> {tracCount} \n┖ <b>Share:</b> <a href='https://t.me/share/url?url={quote(msg)}'>Share To Telegram</a>"
+            else:
+                self.source_msg = f"<code>{msg}</code>"
         else:
-            self.source_msg = f"<code>{msg}</code>"
-    else:
-        self.source_msg = f"<code>{self.source_url}</code>"
-
+            self.source_msg = f"<code>{self.source_url}</code>"
         
     async def onDownloadStart(self):
         if config_dict['LINKS_LOG_ID'] and not self.excep_chat:
