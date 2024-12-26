@@ -55,6 +55,7 @@ class MirrorStatus:
     STATUS_SPLITTING   = "Split"
     STATUS_CHECKING    = "CheckUp"
     STATUS_SEEDING     = "Seed"
+    STATUS_LOCAL       = "Local"
 
 
 class setInterval:
@@ -276,6 +277,7 @@ def get_readable_message():
             dl_speed += speed_in_bytes_per_second
         elif tstatus in [
             MirrorStatus.STATUS_UPLOADING,
+            MirrorStatus.STATUS_LOCAL,
             MirrorStatus.STATUS_SEEDING,
         ]:
             up_speed += speed_in_bytes_per_second
